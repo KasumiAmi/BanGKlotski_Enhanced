@@ -6,8 +6,8 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <title>BanG Dream! 华容道</title>
-    <meta name="description" content="BanG Dream! 主题华容道益智游戏！" />
+    <title>元祖BanG Dream!Chan 华容道小游戏</title>
+    <meta name="description" content="元祖迷你动画小游戏复刻" />
     <style>
       * {
         margin: 0;
@@ -29,7 +29,6 @@
 
       #game-wrapper {
         position: relative;
-        overflow: hidden;
       }
 
       #game-wrapper img.board-bg {
@@ -37,9 +36,9 @@
         width: 960px;
         height: 540px;
         pointer-events: none;
+        transition: opacity 0.3s ease;
       }
 
-      /* 棋盘网格区域 — 基于 board1.png 像素测量 */
       #board {
         position: absolute;
         top: 4.8%;
@@ -47,45 +46,6 @@
         width: 49.5%;
         height: 89.5%;
         overflow: hidden;
-      }
-
-      /* 内部棋盘容器：用于相对定位 */
-      #board-inner {
-        position: relative;
-        width: 960px;
-        height: 540px;
-        margin: 0 auto;
-      }
-
-      /* 电梯楼层像素数字 */
-      #elevator-floor {
-        position: absolute;
-        left: 4.4%;
-        top: 23%;
-        width: 14%;
-        height: 18%;
-        z-index: 5;
-        pointer-events: none;
-        background-color: #000000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .floor-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        grid-template-rows: repeat(7, 1fr);
-        gap: 1.6%;
-        width: 45%; /* 数字宽度 */
-        height: 75%; /* 数字高度 */
-        margin-top: 10%; /* 垂直偏移 */
-      }
-      .floor-grid .px {
-        width: 100%;
-        height: 100%;
-      }
-      .floor-grid .px.on {
-        background-color: #f3ae4e;
       }
 
       .block {
@@ -128,13 +88,76 @@
       #control-panel {
         position: absolute;
         top: 50%;
-        right: 2%; /* 桌面端默认位置 */
+        right: 2%;
         transform: translateY(-50%);
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
         z-index: 20;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px 10px;
+        border-radius: 20px;
+        backdrop-filter: blur(2px);
+      }
+
+      #round-setup {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 5px;
+        width: 100%;
+      }
+
+      #round-setup label {
+        color: #f0d89f;
+        font-size: 12px;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px black;
+      }
+
+      #total-rounds-input {
+        width: 70px;
+        padding: 4px;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #e8b74a;
+        color: #e8b74a;
+        font-weight: bold;
+        border-radius: 20px;
+        outline: none;
+        font-size: 16px;
+      }
+
+      #set-rounds-btn {
+        background: #e8b74a;
+        border: none;
+        color: #1a1a1a;
+        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+        margin-top: 2px;
+      }
+
+      #set-rounds-btn:hover {
+        background: #ffd966;
+        transform: scale(1.05);
+      }
+
+      #round-display {
+        color: #f0d89f;
+        font-size: 18px;
+        font-weight: bold;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 6px 16px;
+        border-radius: 30px;
+        border: 1px solid #e8b74a;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
       }
 
       #step-label {
@@ -154,7 +177,7 @@
       }
 
       .btn {
-        padding: 8px 4px;
+        padding: 8px 20px;
         border: 2px solid #e8b74a;
         background: rgba(0, 0, 0, 0.6);
         color: #e8b74a;
@@ -169,7 +192,7 @@
         text-align: center;
       }
 
-      .btn:hover:not(#btn-voice) {
+      .btn:hover {
         background: #e8b74a;
         color: #1a1a1a;
       }
@@ -179,12 +202,7 @@
         cursor: not-allowed;
       }
 
-      .btn.toggle-on {
-        background: #e8b74a;
-        color: #1a1a1a;
-      }
-
-      /* 胜利结算界面 */
+      /* Victory overlay */
       #victory-overlay {
         display: none;
         position: fixed;
@@ -219,7 +237,7 @@
 
       #victory-box p {
         font-size: 20px;
-        margin-bottom: 24px;
+        margin-bottom: 8px;
         opacity: 0.9;
       }
 
@@ -230,6 +248,7 @@
         color: #fff;
         background: rgba(255, 255, 255, 0.15);
         width: auto;
+        margin-top: 16px;
       }
 
       #victory-box .btn:hover {
@@ -238,34 +257,71 @@
       }
 
       @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
+        from { opacity: 0; }
+        to { opacity: 1; }
       }
 
       @keyframes popIn {
-        from {
-          transform: scale(0.5);
-          opacity: 0;
-        }
-        to {
-          transform: scale(1);
-          opacity: 1;
-        }
+        from { transform: scale(0.5); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
       }
 
-      #github-star {
+      /* ===== 仓库链接区域 - 左下角，增加音效开关 ===== */
+      .repo-links {
         position: absolute;
-        top: 8px;
-        right: 2%;
+        bottom: 8px;
+        left: 2%;
         z-index: 200;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      /* 音效开关样式 */
+      .sound-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1.5px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        backdrop-filter: blur(6px);
+        white-space: nowrap;
+        margin-bottom: 2px;
+        transition: all 0.25s ease;
+      }
+
+      .sound-toggle:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: #e8b74a;
+      }
+
+      .sound-toggle input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #e8b74a;
+        transform: scale(1.1);
+        margin-right: 4px;
+      }
+
+      .sound-toggle label {
+        cursor: pointer;
         display: flex;
         align-items: center;
         gap: 4px;
-        padding: 6px 14px;
+        color: inherit;
+      }
+
+      .repo-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
         background: rgba(0, 0, 0, 0.6);
         border: 1.5px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;
@@ -276,92 +332,126 @@
         font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
         transition: all 0.25s ease;
         backdrop-filter: blur(6px);
+        white-space: nowrap;
       }
 
-      #github-star:hover {
+      .repo-link:hover {
         background: rgba(255, 255, 255, 0.15);
         border-color: #e8b74a;
         color: #e8b74a;
         transform: scale(1.05);
       }
 
-      #github-star svg {
+      .repo-link svg {
         width: 18px;
         height: 18px;
         fill: currentColor;
       }
 
-      #github-star .star-icon {
+      .repo-link .star-icon {
         width: 14px;
         height: 14px;
       }
 
-      /* 响应式适配 */
-      @media (max-width: 780px) {
-        #game-wrapper {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
+      .original-badge {
+        background: #8b6e4b;
+        color: #ffd966;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 12px;
+        margin-left: 6px;
+        font-weight: normal;
+        border: 1px solid #e8b74a;
+      }
 
-        #board-inner {
+      .fork-link {
+        border-color: #6b8e4b;
+      }
+
+      .fork-link:hover {
+        border-color: #a5d6a5;
+        color: #a5d6a5;
+      }
+
+      .bili-link {
+        border-color: #fb7299;
+      }
+
+      .bili-link:hover {
+        border-color: #ffa0c0;
+        color: #ffa0c0;
+        box-shadow: 0 0 15px #fb7299, 0 0 30px #fb7299;
+        transition: all 0.3s ease;
+      }
+
+      .bili-link svg.play-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* Responsive */
+      @media (max-width: 780px) {
+        #game-wrapper img.board-bg {
           width: 100vw;
           height: auto;
-          aspect-ratio: 16 / 9; /* 保持纵横比 */
-          flex-shrink: 0;
         }
-
-        #game-wrapper img.board-bg {
-          width: 100%;
-          height: 100%;
-        }
-
         #control-panel {
-          position: static; /* 在棋盘下方自然流式排列 */
-          transform: none;
+          position: absolute;
+          top: auto;
+          bottom: -50px;
+          right: 50%;
+          transform: translateX(50%);
           flex-direction: row;
-          gap: 15px;
-          z-index: 20;
-          width: 100%;
-          justify-content: center;
-          margin-top: 10px;
-          padding-bottom: 20px; /* 底部留白 */
+          gap: 8px;
+          background: transparent;
+          backdrop-filter: none;
         }
-
+        #round-setup {
+          flex-direction: row;
+          width: auto;
+        }
         #step-label {
-          display: block;
-          font-size: 14px;
-          margin-right: -8px; /* 拉近与数字的距离 */
+          display: none;
         }
         #step-display {
-          font-size: 24px;
-          margin-right: 8px;
-          color: #e8b74a;
-          text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+          font-size: 28px;
         }
         .btn {
-          font-size: 12px;
+          font-size: 13px;
           padding: 6px 14px;
           width: auto;
-          min-width: 60px;
         }
-        #github-star {
-          padding: 8px;
-          width: 36px;
-          height: 36px;
-          justify-content: center;
+        .repo-links {
+          gap: 4px;
+          bottom: 8px;
+          left: 1%;
+        }
+        /* 音效开关在移动端显示为紧凑样式 */
+        .sound-toggle {
+          padding: 4px 8px;
+          font-size: 12px;
+        }
+        .sound-toggle input[type="checkbox"] {
+          width: 14px;
+          height: 14px;
+        }
+        .repo-link {
+          padding: 6px;
           border-radius: 50%;
-          gap: 0;
-          right: 10px;
-          top: 10px;
         }
-        #github-star svg:first-child {
-          width: 20px;
-          height: 20px;
-          margin: 0;
+        .repo-link svg:first-child {
+          width: 16px;
+          height: 16px;
         }
-        #github-star .star-icon,
-        #github-star .star-text {
+        .repo-link .star-icon,
+        .repo-link .star-text,
+        .original-badge {
+          display: none;
+        }
+        .fork-link .star-text {
+          display: none;
+        }
+        .bili-link .star-text {
           display: none;
         }
       }
@@ -369,15 +459,24 @@
   </head>
   <body>
     <div id="game-wrapper">
-      <div id="board-inner">
-        <img class="board-bg" src="images/board1.png" alt="棋盘背景" />
-        <div id="elevator-floor"></div>
+      <img class="board-bg" id="board-bg-img" src="images/board1.png" alt="棋盘背景" />
 
+      <!-- 仓库链接区域：左下角，增加Eve音效开关 -->
+      <div class="repo-links">
+        <!-- 音效开关 -->
+        <div class="sound-toggle">
+          <label>
+            <input type="checkbox" id="eve-sound-toggle" checked> "武士道！"
+          </label>
+        </div>
+
+        <!-- 原仓库链接（带“原作仓库”标签） -->
         <a
-          id="github-star"
+          class="repo-link"
           href="https://github.com/fflow2023/BanGKlotski"
           target="_blank"
           rel="noopener"
+          title="原仓库"
         >
           <svg viewBox="0 0 16 16">
             <path
@@ -389,27 +488,68 @@
               d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"
             />
           </svg>
-          <span class="star-text">Star</span>
+          <span class="star-text"></span>
+          <span class="original-badge">原作仓库</span>
         </a>
 
-        <div id="board"></div>
+        <!-- 优化版 fork 链接（已配置为您的地址） -->
+        <a
+          class="repo-link fork-link"
+          href="https://github.com/KasumiAmi/BanGKlotski_Enhanced"
+          target="_blank"
+          rel="noopener"
+          title="优化版仓库链接"
+        >
+          <svg viewBox="0 0 16 16">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            />
+          </svg>
+          <svg class="star-icon" viewBox="0 0 16 16">
+            <path
+              d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"
+            />
+          </svg>
+          <span class="star-text">本优化版仓库</span>
+        </a>
+
+        <!-- B站番剧链接（带辉光效果） -->
+        <a
+          class="repo-link bili-link"
+          href="https://www.bilibili.com/bangumi/play/ss29308"
+          target="_blank"
+          rel="noopener"
+          title="《BanG Dream! 第三季》 - 元祖迷你动画"
+        >
+          <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <span class="star-text">第19集:箱中米歇尔</span>
+        </a>
       </div>
 
+      <div id="board"></div>
+
       <div id="control-panel">
+        <!-- 回合数设置区域 -->
+        <div id="round-setup">
+          <label for="total-rounds-input">总回合(1-10)</label>
+          <input type="number" id="total-rounds-input" min="1" max="10" value="1" step="1">
+          <button id="set-rounds-btn" onclick="applyTotalRounds()">设置</button>
+        </div>
+
+        <div id="round-display">回合: 1/1</div>
         <div id="step-label">步 数</div>
         <div id="step-display">0</div>
         <button class="btn" id="btn-reset" onclick="resetGame()">重 置</button>
         <button class="btn" id="btn-hint" onclick="getHint()">提 示</button>
-        <button class="btn toggle-on" id="btn-voice" onclick="toggleVoice()">
-          ♪武士道！
-        </button>
       </div>
     </div>
 
     <div id="victory-overlay">
       <div id="victory-box">
-        <h2>🎉 通关成功！</h2>
-        <p>米歇尔成功逃出！用了 <span id="victory-steps">0</span> 步</p>
+        <h2>🎉 恭喜！全部通关！</h2>
+        <p>米歇尔成功逃出 <span id="victory-total-rounds">0</span> 次！总步数 <span id="victory-steps">0</span></p>
         <button class="btn" onclick="resetGame()">再来一局</button>
       </div>
     </div>
@@ -420,10 +560,9 @@
       // ============================================================
       const COLS = 4;
       const ROWS = 5;
-      // 方块之间的间距 (px)
       const GAP = 2;
+      const MAX_ROUNDS = 10; // 最大允许回合数
 
-      // 方块类型: [宽, 高]
       const TYPES = {
         "2x2": [2, 2],
         "1x2": [1, 2],
@@ -431,46 +570,103 @@
         "1x1": [1, 1],
       };
 
-      // 初始布局 — 参照效果图
-      const INITIAL_LAYOUT = [
-        { id: "michelle", type: "2x2", x: 1, y: 0, img: "images/michelle.png" },
-        { id: "nyamu", type: "1x2", x: 0, y: 0, img: "images/nyamu.png" },
-        { id: "moca", type: "1x2", x: 3, y: 0, img: "images/moca.png" },
-        { id: "arisa", type: "1x2", x: 0, y: 2, img: "images/arisa.png" },
-        { id: "yukina", type: "2x1", x: 1, y: 2, img: "images/yukina.png" },
-        { id: "eve", type: "1x2", x: 3, y: 2, img: "images/eve.png" },
-        { id: "saya", type: "1x1", x: 1, y: 3, img: "images/saya.png" },
-        { id: "box", type: "1x1", x: 2, y: 3, img: "images/box.png" },
-        { id: "otae", type: "1x1", x: 0, y: 4, img: "images/otae.png" },
-        { id: "tsukushi", type: "1x1", x: 3, y: 4, img: "images/tsukushi.png" },
+      // ----- 三个不同回合的布局（循环使用）-----
+      const LAYOUTS = [
+        [ // 布局1
+          { id: "michelle", type: "2x2", x: 1, y: 0, img: "images/michelle.png" },
+          { id: "nyamu", type: "1x2", x: 0, y: 0, img: "images/nyamu.png" },
+          { id: "moca", type: "1x2", x: 3, y: 0, img: "images/moca.png" },
+          { id: "arisa", type: "1x2", x: 0, y: 2, img: "images/arisa.png" },
+          { id: "yukina", type: "2x1", x: 1, y: 2, img: "images/yukina.png" },
+          { id: "eve", type: "1x2", x: 3, y: 2, img: "images/eve.png" },
+          { id: "saya", type: "1x1", x: 1, y: 3, img: "images/saya.png" },
+          { id: "box", type: "1x1", x: 2, y: 3, img: "images/box.png" },
+          { id: "otae", type: "1x1", x: 0, y: 4, img: "images/otae.png" },
+          { id: "tsukushi", type: "1x1", x: 3, y: 4, img: "images/tsukushi.png" },
+        ],
+        [ // 布局2
+          { id: "michelle", type: "2x2", x: 1, y: 0, img: "images/michelle.png" },
+          { id: "nyamu", type: "1x2", x: 0, y: 0, img: "images/nyamu.png" },
+          { id: "moca", type: "1x2", x: 3, y: 0, img: "images/moca.png" },
+          { id: "arisa", type: "1x2", x: 0, y: 2, img: "images/arisa.png" },
+          { id: "yukina", type: "2x1", x: 1, y: 2, img: "images/yukina.png" },
+          { id: "eve", type: "1x2", x: 3, y: 2, img: "images/eve.png" },
+          { id: "saya", type: "1x1", x: 2, y: 3, img: "images/saya.png" },
+          { id: "box", type: "1x1", x: 1, y: 3, img: "images/box.png" },
+          { id: "otae", type: "1x1", x: 0, y: 4, img: "images/otae.png" },
+          { id: "tsukushi", type: "1x1", x: 3, y: 4, img: "images/tsukushi.png" },
+        ],
+        [ // 布局3
+          { id: "michelle", type: "2x2", x: 1, y: 0, img: "images/michelle.png" },
+          { id: "nyamu", type: "1x2", x: 0, y: 0, img: "images/nyamu.png" },
+          { id: "moca", type: "1x2", x: 3, y: 0, img: "images/moca.png" },
+          { id: "arisa", type: "1x2", x: 0, y: 2, img: "images/arisa.png" },
+          { id: "yukina", type: "2x1", x: 1, y: 2, img: "images/yukina.png" },
+          { id: "eve", type: "1x2", x: 3, y: 2, img: "images/eve.png" },
+          { id: "saya", type: "1x1", x: 1, y: 3, img: "images/saya.png" },
+          { id: "box", type: "1x1", x: 2, y: 3, img: "images/box.png" },
+          { id: "otae", type: "1x1", x: 3, y: 4, img: "images/otae.png" },
+          { id: "tsukushi", type: "1x1", x: 0, y: 4, img: "images/tsukushi.png" },
+        ]
       ];
 
       // 当前游戏状态
       let blocks = [];
       let steps = 0;
       let solving = false;
+      let currentRound = 1;           // 当前第几回合
+      let totalRounds = 1;             // 总共需要完成的回合数（默认1）
 
       // 提示系统状态
-      let hintSolution = null; // 缓存的解题路径
-      let hintIndex = 0; // 当前提示到第几步
-      let hintStateKey = null; // 缓存对应的状态
-      let hintWorker = null; // Web Worker 引用
+      let hintSolution = null;
+      let hintIndex = 0;
+      let hintStateKey = null;
+      let hintWorker = null;
       let hintComputing = false;
 
       // 拖拽状态
       let dragState = null;
 
+      // 音效开关变量
+      let eveSoundEnabled = true;      // 默认开启
+
       // DOM 引用
       const boardEl = document.getElementById("board");
       const stepDisplay = document.getElementById("step-display");
+      const roundDisplay = document.getElementById("round-display");
       const victoryOverlay = document.getElementById("victory-overlay");
       const victorySteps = document.getElementById("victory-steps");
+      const victoryTotalRounds = document.getElementById("victory-total-rounds");
+      const boardBgImg = document.getElementById("board-bg-img");
+      const totalRoundsInput = document.getElementById("total-rounds-input");
+      const eveSoundToggle = document.getElementById("eve-sound-toggle");
+
+      // 监听音效开关
+      if (eveSoundToggle) {
+        eveSoundToggle.addEventListener('change', function(e) {
+          eveSoundEnabled = e.target.checked;
+        });
+      }
 
       // ============================================================
-      // 渲染
+      // 工具函数
       // ============================================================
       function deepCloneLayout(layout) {
         return layout.map((b) => ({ ...b }));
+      }
+
+      // 根据回合数获取对应的布局（1,2,3循环）
+      function getLayoutForRound(round) {
+        const index = (round - 1) % LAYOUTS.length; // 0,1,2,0,1,2,...
+        return deepCloneLayout(LAYOUTS[index]);
+      }
+
+      // 根据回合数更新棋盘背景图 (board1.png, board2.png, board3.png 循环)
+      function updateBoardBackground(round) {
+        if (boardBgImg) {
+          const bgIndex = (round - 1) % 3 + 1; // 1,2,3循环
+          boardBgImg.src = `images/board${bgIndex}.png`;
+        }
       }
 
       function getCellSize() {
@@ -481,6 +677,9 @@
         };
       }
 
+      // ============================================================
+      // 渲染
+      // ============================================================
       function renderBoard() {
         boardEl.innerHTML = "";
         const { cellW, cellH } = getCellSize();
@@ -516,6 +715,9 @@
 
           boardEl.appendChild(el);
         });
+
+        // 更新回合显示
+        roundDisplay.textContent = `回合: ${currentRound}/${totalRounds}`;
       }
 
       function updateBlockPosition(block) {
@@ -554,29 +756,24 @@
         const dx = clientX - dragState.startX;
         const dy = clientY - dragState.startY;
 
-        // 需要滑动超过半格才触发移动
-        const threshold = Math.min(cellW, cellH) * 0.1;
+        const threshold = Math.min(cellW, cellH) * 0.2;
 
-        if (dragState.moved) return; // 已经触发过移动了
+        if (dragState.moved) return;
 
         let moveDx = 0;
         let moveDy = 0;
 
         if (Math.abs(dx) > Math.abs(dy)) {
-          // 水平拖拽
           if (dx > threshold) moveDx = 1;
           else if (dx < -threshold) moveDx = -1;
         } else {
-          // 垂直拖拽
           if (dy > threshold) moveDy = 1;
           else if (dy < -threshold) moveDy = -1;
         }
 
         if (moveDx !== 0 || moveDy !== 0) {
           const success = moveBlock(dragState.blockId, moveDx, moveDy);
-          if (success) {
-            dragState.moved = true;
-          }
+          if (success) dragState.moved = true;
         }
       }
 
@@ -587,150 +784,91 @@
         dragState = null;
       }
 
-      // 全局鼠标事件
-      document.addEventListener("mousemove", (e) => {
-        onDragMove(e.clientX, e.clientY);
-      });
-
-      document.addEventListener("mouseup", () => {
-        endDrag();
-      });
-
-      // 全局触摸事件
-      document.addEventListener(
-        "touchmove",
-        (e) => {
-          if (dragState) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            onDragMove(touch.clientX, touch.clientY);
-          }
-        },
-        { passive: false },
-      );
-
-      document.addEventListener("touchend", () => {
-        endDrag();
-      });
-
-      document.addEventListener("touchcancel", () => {
-        endDrag();
-      });
+      document.addEventListener("mousemove", (e) => onDragMove(e.clientX, e.clientY));
+      document.addEventListener("mouseup", endDrag);
+      document.addEventListener("touchmove", (e) => {
+        if (dragState) {
+          e.preventDefault();
+          const touch = e.touches[0];
+          onDragMove(touch.clientX, touch.clientY);
+        }
+      }, { passive: false });
+      document.addEventListener("touchend", endDrag);
+      document.addEventListener("touchcancel", endDrag);
 
       // ============================================================
-      // 音效系统 (使用音频文件)
+      // 音效
       // ============================================================
-      const audioCache = {};
+      let audioCtx = null;
 
-      // 角色语音配置表：在此处手动维护存在的音频文件
-      // 如果添加新角色的语音，请在此处添加:
-      const CHARACTER_AUDIO_MAP = {
-        eve: ["images/eve.mp3"],
-        // "michelle": ["images/michelle-1.mp3","images/michelle-2.mp3"],
-      };
+      // 普通移动音效（合成音）
+      function playMoveSound() {
+        if (!audioCtx)
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const t = audioCtx.currentTime;
+        const rand = (base, range) => base + (Math.random() - 0.5) * 2 * range;
 
-      function tryPlayAudio(src) {
-        // 先检查缓存
-        if (audioCache[src]) {
-          const a = audioCache[src].cloneNode();
-          a.volume = audioCache[src].volume || 0.6;
-          a.play().catch(() => {});
-          return;
-        }
+        const bufLen = Math.floor(audioCtx.sampleRate * 0.04);
+        const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
 
-        // 创建新音频对象
-        const audio = new Audio(src);
-        audio.volume = 0.6;
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buf;
 
-        // 尝试播放
-        const p = audio.play();
-        if (p !== undefined) {
-          p.then(() => {
-            // 播放成功才缓存
-            audioCache[src] = audio;
-          }).catch((e) => {
-            console.warn("Audio play failed or file not found:", src);
-          });
-        }
+        const bandpass = audioCtx.createBiquadFilter();
+        bandpass.type = "bandpass";
+        bandpass.frequency.value = rand(2200, 300);
+        bandpass.Q.value = rand(3.0, 0.8);
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(rand(0.35, 0.05), t);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+
+        noise.connect(bandpass);
+        bandpass.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+        noise.start(t);
+
+        const osc = audioCtx.createOscillator();
+        const oscGain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(rand(420, 40), t);
+        osc.frequency.exponentialRampToValueAtTime(rand(150, 20), t + 0.05);
+        oscGain.gain.setValueAtTime(rand(0.2, 0.03), t);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
+        osc.connect(oscGain);
+        oscGain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.06);
       }
 
-      let voiceEnabled = true;
-
-      function toggleVoice() {
-        voiceEnabled = !voiceEnabled;
-        const btn = document.getElementById("btn-voice");
-        if (btn) {
-          btn.classList.toggle("toggle-on", voiceEnabled);
-        }
-      }
-
-      // 播放角色语音
-      function playCharacterAudio(charId) {
-        if (!voiceEnabled) return;
-
-        const variants = CHARACTER_AUDIO_MAP[charId];
-        if (!variants || variants.length === 0) return;
-
-        // 纯随机选取
-        const randomIndex = Math.floor(Math.random() * variants.length);
-        const src = variants[randomIndex];
-
-        tryPlayAudio(src);
-      }
-
-      // 方块类型到音频文件的映射
-      const typeSoundMap = {
-        "2x2": "images/2x2.mp3",
-        "1x2": "images/1x2.mp3",
-        "2x1": "images/1x2.mp3",
-        "1x1": "images/1x1.mp3",
-      };
-
-      // 播放移动音效：类型音 + 角色音
-      function playMoveSound(block) {
-        // 播放方块类型对应的移动音
-        const typeSound = typeSoundMap[block.type];
-        if (typeSound) tryPlayAudio(typeSound);
-
-        // 播放角色专属音频（如果有）
-        // 跳过通用方块如 box
-        if (block.id !== "box") {
-          playCharacterAudio(block.id);
+      // eve 专属音效（播放外部文件）
+      function playEveSound() {
+        try {
+          const audio = new Audio('images/eve.mp3');
+          audio.volume = 0.5;
+          audio.play().catch(e => console.log('eve音效播放失败（可忽略）', e));
+        } catch (e) {
+          console.log('eve音效错误', e);
         }
       }
 
-      // 播放通关音效
-      function playWinSound() {
-        tryPlayAudio("images/win.mp3");
-      }
-
-      // 预加载所有音频资源
-      function preloadSounds() {
-        const audioList = [
-          "images/win.mp3",
-          ...Object.values(typeSoundMap),
-          ...Object.values(CHARACTER_AUDIO_MAP).flat(),
-        ];
-
-        // 去重
-        const uniqueSrcs = [...new Set(audioList)];
-
-        uniqueSrcs.forEach((src) => {
-          if (!audioCache[src]) {
-            const audio = new Audio();
-            audio.src = src;
-            audio.volume = 0.6;
-            audio.load(); // 强制加载
-            audioCache[src] = audio;
-          }
-        });
+      // 胜利音效
+      function playVictorySound() {
+        try {
+          const audio = new Audio('images/victory.mp3');
+          audio.volume = 0.5;
+          audio.play().catch(e => console.log('胜利音效播放失败（可忽略）', e));
+        } catch (e) {
+          console.log('胜利音效错误', e);
+        }
       }
 
       // ============================================================
       // 碰撞检测与移动
       // ============================================================
-
-      // 构建 4x5 占用网格
       function buildGrid(blocksState) {
         const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
         blocksState.forEach((b) => {
@@ -749,19 +887,42 @@
         const nx = block.x + dx;
         const ny = block.y + dy;
 
-        // 边界检测
         if (nx < 0 || ny < 0 || nx + w > COLS || ny + h > ROWS) return false;
 
-        // 碰撞检测：检查目标位置是否被其他方块占据
         for (let r = 0; r < h; r++) {
           for (let c = 0; c < w; c++) {
-            const targetR = ny + r;
-            const targetC = nx + c;
-            const occupant = grid[targetR][targetC];
+            const occupant = grid[ny + r][nx + c];
             if (occupant !== null && occupant !== block.id) return false;
           }
         }
         return true;
+      }
+
+      // 处理回合完成（米歇尔到达出口）
+      function handleRoundComplete() {
+        if (currentRound < totalRounds) {
+          // 进入下一回合
+          currentRound++;
+          // 更新背景图
+          updateBoardBackground(currentRound);
+          // 加载下一回合的布局（循环）
+          blocks = getLayoutForRound(currentRound);
+          // 重新渲染棋盘
+          renderBoard();
+          // 清除提示缓存（新布局需要重新计算）
+          hintSolution = null;
+          hintIndex = 0;
+          hintStateKey = null;
+          // 更新回合显示
+          roundDisplay.textContent = `回合: ${currentRound}/${totalRounds}`;
+          // 步数不清零，累计
+        } else {
+          // 已完成全部回合，显示胜利弹窗
+          victorySteps.textContent = steps;
+          victoryTotalRounds.textContent = totalRounds;
+          victoryOverlay.classList.add("show");
+          playVictorySound();
+        }
       }
 
       function moveBlock(blockId, dx, dy) {
@@ -774,7 +935,15 @@
         block.x += dx;
         block.y += dy;
         updateBlockPosition(block);
-        playMoveSound(block);
+
+        // 播放音效：eve 根据开关决定是否播放
+        if (block.id === 'eve') {
+          if (eveSoundEnabled) {
+            playEveSound();
+          }
+        } else {
+          playMoveSound();
+        }
 
         if (!solving) {
           // 用户手动移动，使提示缓存失效
@@ -783,26 +952,27 @@
           hintStateKey = null;
           steps++;
           stepDisplay.textContent = steps;
-          updateFloorDisplay();
         }
 
-        // 胜利判定
+        // 胜利判定：仅当米歇尔到达出口 (1,3) 时触发回合处理
         if (block.id === "michelle" && block.x === 1 && block.y === 3) {
-          setTimeout(() => {
-            playWinSound();
-            showVictory();
-          }, 300);
+          setTimeout(handleRoundComplete, 300);
         }
 
         return true;
       }
 
       // ============================================================
-      // 胜利
+      // 应用自定义总回合数
       // ============================================================
-      function showVictory() {
-        victorySteps.textContent = steps;
-        victoryOverlay.classList.add("show");
+      function applyTotalRounds() {
+        let newTotal = parseInt(totalRoundsInput.value, 10);
+        if (isNaN(newTotal) || newTotal < 1) newTotal = 1;
+        if (newTotal > MAX_ROUNDS) newTotal = MAX_ROUNDS;
+        totalRoundsInput.value = newTotal; // 回显修正后的值
+        totalRounds = newTotal;
+        // 重置游戏（从第一回合开始）
+        resetGame();
       }
 
       // ============================================================
@@ -812,8 +982,12 @@
         solving = false;
         steps = 0;
         stepDisplay.textContent = "0";
+        currentRound = 1;
+        roundDisplay.textContent = `回合: ${currentRound}/${totalRounds}`;
         victoryOverlay.classList.remove("show");
-        blocks = deepCloneLayout(INITIAL_LAYOUT);
+        blocks = getLayoutForRound(1); // 从第一关开始
+        updateBoardBackground(1);
+
         hintSolution = null;
         hintIndex = 0;
         hintStateKey = null;
@@ -828,75 +1002,11 @@
           btnHint.textContent = "提 示";
         }
         renderBoard();
-        updateFloorDisplay();
       }
 
       // ============================================================
-      // 电梯楼层像素数字
+      // 提示系统 (Web Worker BFS) - 代码与之前完全相同
       // ============================================================
-      const FLOOR_DIGITS = {
-        1: [
-          0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
-          0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0,
-        ],
-        2: [
-          0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0,
-          0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-        ],
-        3: [
-          0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0,
-          0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0,
-        ],
-        4: [
-          0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1,
-          1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
-        ],
-        5: [
-          1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
-          0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0,
-        ],
-        6: [
-          0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0,
-          0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0,
-        ],
-        7: [
-          1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
-          0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0,
-        ],
-      };
-      function updateFloorDisplay() {
-        const floor = Math.min(7, Math.floor(steps / 50) + 1);
-        const container = document.getElementById("elevator-floor");
-        if (!container) return;
-        container.innerHTML = "";
-        const grid = document.createElement("div");
-        grid.className = "floor-grid";
-        const pattern = FLOOR_DIGITS[floor];
-        for (let i = 0; i < 35; i++) {
-          const px = document.createElement("div");
-          px.className = "px" + (pattern[i] ? " on" : "");
-          grid.appendChild(px);
-        }
-        container.appendChild(grid);
-      }
-
-      // 初始化楼层显示
-      updateFloorDisplay();
-
-      // 调试用
-      window.setSteps = function (n) {
-        steps = n;
-        stepDisplay.textContent = n;
-        updateFloorDisplay();
-      };
-
-      // ============================================================
-      // 提示系统 (Web Worker BFS)
-      // ============================================================
-
-      // Web Worker 源码 — 使用类型编码进行高效 BFS
-      // 关键优化：同类型方块视为等价，只有 michelle 使用独立标识
-      // 这将状态空间从数百万降到约 25,000
       const workerCode = `
         const COLS = 4, ROWS = 5;
         const TYPES = { '2x2': [2,2], '1x2': [1,2], '2x1': [2,1], '1x1': [1,1] };
@@ -1008,12 +1118,10 @@
         // 如果有缓存的解且还有后续步骤，直接执行
         if (hintSolution && hintIndex < hintSolution.length) {
           const move = hintSolution[hintIndex];
-          // 标记为 solving 以避免清除缓存
           solving = true;
           moveBlock(move.id, move.dx, move.dy);
           steps++;
           stepDisplay.textContent = steps;
-          updateFloorDisplay();
           solving = false;
           hintIndex++;
           if (hintIndex >= hintSolution.length) {
@@ -1048,7 +1156,6 @@
             moveBlock(move.id, move.dx, move.dy);
             steps++;
             stepDisplay.textContent = steps;
-            updateFloorDisplay();
             solving = false;
             hintIndex++;
             if (hintIndex >= hintSolution.length) {
@@ -1075,8 +1182,7 @@
       // 启动
       // ============================================================
       window.addEventListener("load", () => {
-        preloadSounds();
-        resetGame();
+        resetGame(); // 此时 totalRounds 为默认1
       });
 
       window.addEventListener("resize", () => {
