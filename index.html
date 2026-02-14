@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
     <title>元祖BanG Dream!Chan 华容道小游戏</title>
-    <meta name="description" content="元祖迷你动画小游戏复刻" />
+    <meta name="description" content="元祖迷你动画小游戏复刻，体验增强" />
     <style>
       * {
         margin: 0;
@@ -29,6 +29,7 @@
 
       #game-wrapper {
         position: relative;
+        overflow: hidden;
       }
 
       #game-wrapper img.board-bg {
@@ -36,9 +37,9 @@
         width: 960px;
         height: 540px;
         pointer-events: none;
-        transition: opacity 0.3s ease;
       }
 
+      /* 棋盘网格区域 — 基于 board1.png 像素测量 */
       #board {
         position: absolute;
         top: 4.8%;
@@ -46,6 +47,43 @@
         width: 49.5%;
         height: 89.5%;
         overflow: hidden;
+      }
+
+      /* 内部棋盘容器：用于相对定位 */
+      #board-inner {
+        position: relative;
+        width: 960px;
+        height: 540px;
+        margin: 0 auto;
+      }
+
+      /* 电梯楼层像素数字（改为文本显示，支持多位） */
+      #elevator-floor {
+        position: absolute;
+        left: 4.4%;
+        top: 23%;
+        width: 14%;
+        height: 18%;
+        z-index: 5;
+        pointer-events: none;
+        background-color: #000000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Courier New', monospace;
+        /* 响应式字体，相对于父容器 */
+        font-weight: bold;
+        color: #f3ae4e;
+        text-shadow: 2px 2px 0 #b3742e;
+        line-height: 1;
+        padding: 5px;
+        box-sizing: border-box;
+      }
+      /* 桌面端字体固定大小 */
+      @media (min-width: 781px) {
+        #elevator-floor {
+          font-size: 50px;
+        }
       }
 
       .block {
@@ -93,71 +131,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         z-index: 20;
-        background: rgba(0, 0, 0, 0.3);
-        padding: 15px 10px;
-        border-radius: 20px;
-        backdrop-filter: blur(2px);
-      }
-
-      #round-setup {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        margin-bottom: 5px;
-        width: 100%;
-      }
-
-      #round-setup label {
-        color: #f0d89f;
-        font-size: 12px;
-        font-weight: bold;
-        text-shadow: 1px 1px 2px black;
-      }
-
-      #total-rounds-input {
-        width: 70px;
-        padding: 4px;
-        text-align: center;
-        background: rgba(0, 0, 0, 0.7);
-        border: 2px solid #e8b74a;
-        color: #e8b74a;
-        font-weight: bold;
-        border-radius: 20px;
-        outline: none;
-        font-size: 16px;
-      }
-
-      #set-rounds-btn {
-        background: #e8b74a;
-        border: none;
-        color: #1a1a1a;
-        font-weight: bold;
-        padding: 4px 12px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 12px;
-        transition: all 0.2s;
-        margin-top: 2px;
-      }
-
-      #set-rounds-btn:hover {
-        background: #ffd966;
-        transform: scale(1.05);
-      }
-
-      #round-display {
-        color: #f0d89f;
-        font-size: 18px;
-        font-weight: bold;
-        background: rgba(0, 0, 0, 0.5);
-        padding: 6px 16px;
-        border-radius: 30px;
-        border: 1px solid #e8b74a;
-        margin-bottom: 5px;
-        letter-spacing: 1px;
       }
 
       #step-label {
@@ -177,7 +152,7 @@
       }
 
       .btn {
-        padding: 8px 20px;
+        padding: 8px 4px;
         border: 2px solid #e8b74a;
         background: rgba(0, 0, 0, 0.6);
         color: #e8b74a;
@@ -192,7 +167,7 @@
         text-align: center;
       }
 
-      .btn:hover {
+      .btn:hover:not(#btn-voice):not(.floor-btn) {
         background: #e8b74a;
         color: #1a1a1a;
       }
@@ -202,7 +177,47 @@
         cursor: not-allowed;
       }
 
-      /* Victory overlay */
+      .btn.toggle-on {
+        background: #e8b74a;
+        color: #1a1a1a;
+      }
+
+      /* 自定义楼层控件 */
+      .floor-control {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: 5px;
+      }
+      .floor-control input {
+        width: 80px;
+        padding: 6px 4px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #e8b74a;
+        color: #e8b74a;
+        font-weight: bold;
+        border-radius: 20px;
+        outline: none;
+        font-size: 16px;
+        text-align: center;
+        font-family: 'Courier New', monospace;
+      }
+      .floor-control .btn {
+        width: auto;
+        padding: 6px 12px;
+        font-size: 13px;
+        background: rgba(0, 0, 0, 0.6);
+        border-color: #e8b74a;
+        color: #e8b74a;
+      }
+      .floor-control .btn:hover {
+        background: #e8b74a;
+        color: #1a1a1a;
+      }
+
+      /* 胜利结算界面 */
       #victory-overlay {
         display: none;
         position: fixed;
@@ -237,7 +252,7 @@
 
       #victory-box p {
         font-size: 20px;
-        margin-bottom: 8px;
+        margin-bottom: 24px;
         opacity: 0.9;
       }
 
@@ -248,7 +263,6 @@
         color: #fff;
         background: rgba(255, 255, 255, 0.15);
         width: auto;
-        margin-top: 16px;
       }
 
       #victory-box .btn:hover {
@@ -266,62 +280,22 @@
         to { transform: scale(1); opacity: 1; }
       }
 
-      /* ===== 仓库链接区域 - 左下角，增加音效开关 ===== */
+      /* ===== 新增链接容器 ===== */
       .repo-links {
         position: absolute;
-        bottom: 8px;
-        left: 2%;
+        top: 8px;
+        right: 2%;
         z-index: 200;
         display: flex;
         flex-direction: column;
         gap: 6px;
       }
 
-      /* 音效开关样式 */
-      .sound-toggle {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
-        background: rgba(0, 0, 0, 0.6);
-        border: 1.5px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        color: #fff;
-        font-size: 13px;
-        font-weight: 600;
-        backdrop-filter: blur(6px);
-        white-space: nowrap;
-        margin-bottom: 2px;
-        transition: all 0.25s ease;
-      }
-
-      .sound-toggle:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: #e8b74a;
-      }
-
-      .sound-toggle input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
-        cursor: pointer;
-        accent-color: #e8b74a;
-        transform: scale(1.1);
-        margin-right: 4px;
-      }
-
-      .sound-toggle label {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        color: inherit;
-      }
-
       .repo-link {
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
+        gap: 4px;
+        padding: 6px 14px;
         background: rgba(0, 0, 0, 0.6);
         border: 1.5px solid rgba(255, 255, 255, 0.2);
         border-radius: 20px;
@@ -353,26 +327,7 @@
         height: 14px;
       }
 
-      .original-badge {
-        background: #8b6e4b;
-        color: #ffd966;
-        font-size: 10px;
-        padding: 2px 6px;
-        border-radius: 12px;
-        margin-left: 6px;
-        font-weight: normal;
-        border: 1px solid #e8b74a;
-      }
-
-      .fork-link {
-        border-color: #6b8e4b;
-      }
-
-      .fork-link:hover {
-        border-color: #a5d6a5;
-        color: #a5d6a5;
-      }
-
+      /* B站链接粉色辉光 */
       .bili-link {
         border-color: #fb7299;
       }
@@ -381,7 +336,6 @@
         border-color: #ffa0c0;
         color: #ffa0c0;
         box-shadow: 0 0 15px #fb7299, 0 0 30px #fb7299;
-        transition: all 0.3s ease;
       }
 
       .bili-link svg.play-icon {
@@ -389,69 +343,88 @@
         height: 16px;
       }
 
-      /* Responsive */
+      /* 响应式适配 — 完美支持横竖屏 */
       @media (max-width: 780px) {
-        #game-wrapper img.board-bg {
+        #game-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        #board-inner {
           width: 100vw;
           height: auto;
+          aspect-ratio: 16 / 9;
+          flex-shrink: 0;
         }
+
+        #game-wrapper img.board-bg {
+          width: 100%;
+          height: 100%;
+        }
+
         #control-panel {
-          position: absolute;
-          top: auto;
-          bottom: -50px;
-          right: 50%;
-          transform: translateX(50%);
+          position: static;
+          transform: none;
           flex-direction: row;
-          gap: 8px;
-          background: transparent;
-          backdrop-filter: none;
+          flex-wrap: wrap;
+          gap: 10px;
+          z-index: 20;
+          width: 100%;
+          justify-content: center;
+          margin-top: 10px;
+          padding-bottom: 20px;
         }
-        #round-setup {
-          flex-direction: row;
-          width: auto;
-        }
+
         #step-label {
-          display: none;
+          display: block;
+          font-size: 14px;
+          margin-right: -8px;
         }
         #step-display {
-          font-size: 28px;
+          font-size: 24px;
+          margin-right: 8px;
         }
         .btn {
-          font-size: 13px;
-          padding: 6px 14px;
+          font-size: 12px;
+          padding: 6px 10px;
           width: auto;
+          min-width: 50px;
         }
+        .floor-control {
+          width: 100%;
+          justify-content: center;
+          order: 1;
+        }
+        .floor-control input {
+          width: 100px;
+          font-size: 14px;
+        }
+
+        /* 移动端链接容器 */
         .repo-links {
           gap: 4px;
-          bottom: 8px;
-          left: 1%;
+          right: 10px;
+          top: 10px;
         }
-        /* 音效开关在移动端显示为紧凑样式 */
-        .sound-toggle {
-          padding: 4px 8px;
-          font-size: 12px;
-        }
-        .sound-toggle input[type="checkbox"] {
-          width: 14px;
-          height: 14px;
-        }
+
         .repo-link {
-          padding: 6px;
+          padding: 8px;
+          width: 36px;
+          height: 36px;
+          justify-content: center;
           border-radius: 50%;
+          gap: 0;
         }
+
         .repo-link svg:first-child {
-          width: 16px;
-          height: 16px;
+          width: 20px;
+          height: 20px;
+          margin: 0;
         }
+
         .repo-link .star-icon,
-        .repo-link .star-text,
-        .original-badge {
-          display: none;
-        }
-        .fork-link .star-text {
-          display: none;
-        }
-        .bili-link .star-text {
+        .repo-link .star-text {
           display: none;
         }
       }
@@ -459,97 +432,75 @@
   </head>
   <body>
     <div id="game-wrapper">
-      <img class="board-bg" id="board-bg-img" src="images/board1.png" alt="棋盘背景" />
+      <div id="board-inner">
+        <img class="board-bg" src="images/board1.png" alt="棋盘背景" />
+        <div id="elevator-floor">1</div> <!-- 默认显示1楼 -->
 
-      <!-- 仓库链接区域：左下角，增加Eve音效开关 -->
-      <div class="repo-links">
-        <!-- 音效开关 -->
-        <div class="sound-toggle">
-          <label>
-            <input type="checkbox" id="eve-sound-toggle" checked> "武士道！"
-          </label>
+        <!-- 链接容器：原仓库 + fork仓库 + B站番剧 -->
+        <div class="repo-links">
+          <!-- 原仓库链接 -->
+          <a class="repo-link" href="https://github.com/fflow2023/BanGKlotski" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16">
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+              />
+            </svg>
+            <svg class="star-icon" viewBox="0 0 16 16">
+              <path
+                d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"
+              />
+            </svg>
+            <span class="star-text">原项目:B站@心之流_</span>
+          </a>
+
+          <!-- 你的 fork 仓库链接（请将 href 替换为你的实际地址） -->
+          <a class="repo-link fork-link" href="https://github.com/KasumiAmi/BanGKlotski_Enhanced" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16">
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+              />
+            </svg>
+            <svg class="star-icon" viewBox="0 0 16 16">
+              <path
+                d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"
+              />
+            </svg>
+            <span class="star-text">Fork:B站@千石Yuno酱</span>
+          </a>
+
+          <!-- B站番剧链接（带粉色辉光） -->
+          <a class="repo-link bili-link" href="https://www.bilibili.com/bangumi/play/ss29308" target="_blank" rel="noopener">
+            <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <span class="star-text">第19集:箱中米歇尔</span>
+          </a>
         </div>
 
-        <!-- 原仓库链接（带“原作仓库”标签） -->
-        <a
-          class="repo-link"
-          href="https://github.com/fflow2023/BanGKlotski"
-          target="_blank"
-          rel="noopener"
-          title="原仓库"
-        >
-          <svg viewBox="0 0 16 16">
-            <path
-              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
-            />
-          </svg>
-          <svg class="star-icon" viewBox="0 0 16 16">
-            <path
-              d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"
-            />
-          </svg>
-          <span class="star-text"></span>
-          <span class="original-badge">原作仓库</span>
-        </a>
-
-        <!-- 优化版 fork 链接（已配置为您的地址） -->
-        <a
-          class="repo-link fork-link"
-          href="https://github.com/KasumiAmi/BanGKlotski_Enhanced"
-          target="_blank"
-          rel="noopener"
-          title="优化版仓库链接"
-        >
-          <svg viewBox="0 0 16 16">
-            <path
-              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
-            />
-          </svg>
-          <svg class="star-icon" viewBox="0 0 16 16">
-            <path
-              d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"
-            />
-          </svg>
-          <span class="star-text">本优化版仓库</span>
-        </a>
-
-        <!-- B站番剧链接（带辉光效果） -->
-        <a
-          class="repo-link bili-link"
-          href="https://www.bilibili.com/bangumi/play/ss29308"
-          target="_blank"
-          rel="noopener"
-          title="《BanG Dream! 第三季》 - 元祖迷你动画"
-        >
-          <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-          <span class="star-text">第19集:箱中米歇尔</span>
-        </a>
+        <div id="board"></div>
       </div>
 
-      <div id="board"></div>
-
       <div id="control-panel">
-        <!-- 回合数设置区域 -->
-        <div id="round-setup">
-          <label for="total-rounds-input">总回合(1-10)</label>
-          <input type="number" id="total-rounds-input" min="1" max="10" value="1" step="1">
-          <button id="set-rounds-btn" onclick="applyTotalRounds()">设置</button>
-        </div>
-
-        <div id="round-display">回合: 1/1</div>
         <div id="step-label">步 数</div>
         <div id="step-display">0</div>
         <button class="btn" id="btn-reset" onclick="resetGame()">重 置</button>
         <button class="btn" id="btn-hint" onclick="getHint()">提 示</button>
+        <button class="btn toggle-on" id="btn-voice" onclick="toggleVoice()">
+          ♪武士道！
+        </button>
+
+        <!-- 自定义楼层控件 -->
+        <div class="floor-control">
+          <input type="number" id="custom-floor" value="1" min="1" step="1">
+          <button class="btn floor-btn" id="random-floor">随机</button>
+        </div>
       </div>
     </div>
 
     <div id="victory-overlay">
       <div id="victory-box">
-        <h2>🎉 恭喜！全部通关！</h2>
-        <p>米歇尔成功逃出 <span id="victory-total-rounds">0</span> 次！总步数 <span id="victory-steps">0</span></p>
+        <h2>🎉 通关成功！</h2>
+        <p>米歇尔成功逃出！用了 <span id="victory-steps">0</span> 步</p>
         <button class="btn" onclick="resetGame()">再来一局</button>
       </div>
     </div>
@@ -561,7 +512,6 @@
       const COLS = 4;
       const ROWS = 5;
       const GAP = 2;
-      const MAX_ROUNDS = 10; // 最大允许回合数
 
       const TYPES = {
         "2x2": [2, 2],
@@ -570,52 +520,24 @@
         "1x1": [1, 1],
       };
 
-      // ----- 三个不同回合的布局（循环使用）-----
-      const LAYOUTS = [
-        [ // 布局1
-          { id: "michelle", type: "2x2", x: 1, y: 0, img: "images/michelle.png" },
-          { id: "nyamu", type: "1x2", x: 0, y: 0, img: "images/nyamu.png" },
-          { id: "moca", type: "1x2", x: 3, y: 0, img: "images/moca.png" },
-          { id: "arisa", type: "1x2", x: 0, y: 2, img: "images/arisa.png" },
-          { id: "yukina", type: "2x1", x: 1, y: 2, img: "images/yukina.png" },
-          { id: "eve", type: "1x2", x: 3, y: 2, img: "images/eve.png" },
-          { id: "saya", type: "1x1", x: 1, y: 3, img: "images/saya.png" },
-          { id: "box", type: "1x1", x: 2, y: 3, img: "images/box.png" },
-          { id: "otae", type: "1x1", x: 0, y: 4, img: "images/otae.png" },
-          { id: "tsukushi", type: "1x1", x: 3, y: 4, img: "images/tsukushi.png" },
-        ],
-        [ // 布局2
-          { id: "michelle", type: "2x2", x: 1, y: 0, img: "images/michelle.png" },
-          { id: "nyamu", type: "1x2", x: 0, y: 0, img: "images/nyamu.png" },
-          { id: "moca", type: "1x2", x: 3, y: 0, img: "images/moca.png" },
-          { id: "arisa", type: "1x2", x: 0, y: 2, img: "images/arisa.png" },
-          { id: "yukina", type: "2x1", x: 1, y: 2, img: "images/yukina.png" },
-          { id: "eve", type: "1x2", x: 3, y: 2, img: "images/eve.png" },
-          { id: "saya", type: "1x1", x: 2, y: 3, img: "images/saya.png" },
-          { id: "box", type: "1x1", x: 1, y: 3, img: "images/box.png" },
-          { id: "otae", type: "1x1", x: 0, y: 4, img: "images/otae.png" },
-          { id: "tsukushi", type: "1x1", x: 3, y: 4, img: "images/tsukushi.png" },
-        ],
-        [ // 布局3
-          { id: "michelle", type: "2x2", x: 1, y: 0, img: "images/michelle.png" },
-          { id: "nyamu", type: "1x2", x: 0, y: 0, img: "images/nyamu.png" },
-          { id: "moca", type: "1x2", x: 3, y: 0, img: "images/moca.png" },
-          { id: "arisa", type: "1x2", x: 0, y: 2, img: "images/arisa.png" },
-          { id: "yukina", type: "2x1", x: 1, y: 2, img: "images/yukina.png" },
-          { id: "eve", type: "1x2", x: 3, y: 2, img: "images/eve.png" },
-          { id: "saya", type: "1x1", x: 1, y: 3, img: "images/saya.png" },
-          { id: "box", type: "1x1", x: 2, y: 3, img: "images/box.png" },
-          { id: "otae", type: "1x1", x: 3, y: 4, img: "images/otae.png" },
-          { id: "tsukushi", type: "1x1", x: 0, y: 4, img: "images/tsukushi.png" },
-        ]
+      // 初始布局 — 参照效果图
+      const INITIAL_LAYOUT = [
+        { id: "michelle", type: "2x2", x: 1, y: 0, img: "images/michelle.png" },
+        { id: "nyamu", type: "1x2", x: 0, y: 0, img: "images/nyamu.png" },
+        { id: "moca", type: "1x2", x: 3, y: 0, img: "images/moca.png" },
+        { id: "arisa", type: "1x2", x: 0, y: 2, img: "images/arisa.png" },
+        { id: "yukina", type: "2x1", x: 1, y: 2, img: "images/yukina.png" },
+        { id: "eve", type: "1x2", x: 3, y: 2, img: "images/eve.png" },
+        { id: "saya", type: "1x1", x: 1, y: 3, img: "images/saya.png" },
+        { id: "box", type: "1x1", x: 2, y: 3, img: "images/box.png" },
+        { id: "otae", type: "1x1", x: 0, y: 4, img: "images/otae.png" },
+        { id: "tsukushi", type: "1x1", x: 3, y: 4, img: "images/tsukushi.png" },
       ];
 
       // 当前游戏状态
       let blocks = [];
       let steps = 0;
       let solving = false;
-      let currentRound = 1;           // 当前第几回合
-      let totalRounds = 1;             // 总共需要完成的回合数（默认1）
 
       // 提示系统状态
       let hintSolution = null;
@@ -627,46 +549,43 @@
       // 拖拽状态
       let dragState = null;
 
-      // 音效开关变量
-      let eveSoundEnabled = true;      // 默认开启
-
       // DOM 引用
       const boardEl = document.getElementById("board");
       const stepDisplay = document.getElementById("step-display");
-      const roundDisplay = document.getElementById("round-display");
       const victoryOverlay = document.getElementById("victory-overlay");
       const victorySteps = document.getElementById("victory-steps");
-      const victoryTotalRounds = document.getElementById("victory-total-rounds");
-      const boardBgImg = document.getElementById("board-bg-img");
-      const totalRoundsInput = document.getElementById("total-rounds-input");
-      const eveSoundToggle = document.getElementById("eve-sound-toggle");
-
-      // 监听音效开关
-      if (eveSoundToggle) {
-        eveSoundToggle.addEventListener('change', function(e) {
-          eveSoundEnabled = e.target.checked;
-        });
-      }
+      const elevatorFloor = document.getElementById("elevator-floor");
+      const customFloorInput = document.getElementById("custom-floor");
+      const randomFloorBtn = document.getElementById("random-floor");
 
       // ============================================================
-      // 工具函数
+      // 自定义楼层功能
+      // ============================================================
+      function updateElevatorFloor(value) {
+        // 确保为正整数
+        let num = parseInt(value, 10);
+        if (isNaN(num) || num < 1) num = 1;
+        elevatorFloor.textContent = num;
+        customFloorInput.value = num; // 同步输入框
+      }
+
+      // 监听输入框变化
+      customFloorInput.addEventListener('input', (e) => {
+        updateElevatorFloor(e.target.value);
+      });
+
+      // 随机按钮
+      randomFloorBtn.addEventListener('click', () => {
+        // 生成1~1000随机整数（可调整上限）
+        const randomNum = Math.floor(Math.random() * 1000) + 1;
+        updateElevatorFloor(randomNum);
+      });
+
+      // ============================================================
+      // 渲染
       // ============================================================
       function deepCloneLayout(layout) {
         return layout.map((b) => ({ ...b }));
-      }
-
-      // 根据回合数获取对应的布局（1,2,3循环）
-      function getLayoutForRound(round) {
-        const index = (round - 1) % LAYOUTS.length; // 0,1,2,0,1,2,...
-        return deepCloneLayout(LAYOUTS[index]);
-      }
-
-      // 根据回合数更新棋盘背景图 (board1.png, board2.png, board3.png 循环)
-      function updateBoardBackground(round) {
-        if (boardBgImg) {
-          const bgIndex = (round - 1) % 3 + 1; // 1,2,3循环
-          boardBgImg.src = `images/board${bgIndex}.png`;
-        }
       }
 
       function getCellSize() {
@@ -677,9 +596,6 @@
         };
       }
 
-      // ============================================================
-      // 渲染
-      // ============================================================
       function renderBoard() {
         boardEl.innerHTML = "";
         const { cellW, cellH } = getCellSize();
@@ -715,9 +631,6 @@
 
           boardEl.appendChild(el);
         });
-
-        // 更新回合显示
-        roundDisplay.textContent = `回合: ${currentRound}/${totalRounds}`;
       }
 
       function updateBlockPosition(block) {
@@ -756,7 +669,7 @@
         const dx = clientX - dragState.startX;
         const dy = clientY - dragState.startY;
 
-        const threshold = Math.min(cellW, cellH) * 0.2;
+        const threshold = Math.min(cellW, cellH) * 0.1;
 
         if (dragState.moved) return;
 
@@ -797,78 +710,94 @@
       document.addEventListener("touchcancel", endDrag);
 
       // ============================================================
-      // 音效
+      // 音效系统 (使用音频文件)
       // ============================================================
-      let audioCtx = null;
+      const audioCache = {};
 
-      // 普通移动音效（合成音）
-      function playMoveSound() {
-        if (!audioCtx)
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const t = audioCtx.currentTime;
-        const rand = (base, range) => base + (Math.random() - 0.5) * 2 * range;
+      const CHARACTER_AUDIO_MAP = {
+        eve: ["images/eve.mp3"],
+      };
 
-        const bufLen = Math.floor(audioCtx.sampleRate * 0.04);
-        const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+      function tryPlayAudio(src) {
+        if (audioCache[src]) {
+          const a = audioCache[src].cloneNode();
+          a.volume = audioCache[src].volume || 0.6;
+          a.play().catch(() => {});
+          return;
+        }
 
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buf;
+        const audio = new Audio(src);
+        audio.volume = 0.6;
 
-        const bandpass = audioCtx.createBiquadFilter();
-        bandpass.type = "bandpass";
-        bandpass.frequency.value = rand(2200, 300);
-        bandpass.Q.value = rand(3.0, 0.8);
-
-        const noiseGain = audioCtx.createGain();
-        noiseGain.gain.setValueAtTime(rand(0.35, 0.05), t);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-
-        noise.connect(bandpass);
-        bandpass.connect(noiseGain);
-        noiseGain.connect(audioCtx.destination);
-        noise.start(t);
-
-        const osc = audioCtx.createOscillator();
-        const oscGain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(rand(420, 40), t);
-        osc.frequency.exponentialRampToValueAtTime(rand(150, 20), t + 0.05);
-        oscGain.gain.setValueAtTime(rand(0.2, 0.03), t);
-        oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
-
-        osc.connect(oscGain);
-        oscGain.connect(audioCtx.destination);
-        osc.start(t);
-        osc.stop(t + 0.06);
-      }
-
-      // eve 专属音效（播放外部文件）
-      function playEveSound() {
-        try {
-          const audio = new Audio('images/eve.mp3');
-          audio.volume = 0.5;
-          audio.play().catch(e => console.log('eve音效播放失败（可忽略）', e));
-        } catch (e) {
-          console.log('eve音效错误', e);
+        const p = audio.play();
+        if (p !== undefined) {
+          p.then(() => {
+            audioCache[src] = audio;
+          }).catch((e) => {
+            console.warn("Audio play failed or file not found:", src);
+          });
         }
       }
 
-      // 胜利音效
-      function playVictorySound() {
-        try {
-          const audio = new Audio('images/victory.mp3');
-          audio.volume = 0.5;
-          audio.play().catch(e => console.log('胜利音效播放失败（可忽略）', e));
-        } catch (e) {
-          console.log('胜利音效错误', e);
+      let voiceEnabled = true;
+
+      function toggleVoice() {
+        voiceEnabled = !voiceEnabled;
+        const btn = document.getElementById("btn-voice");
+        if (btn) {
+          btn.classList.toggle("toggle-on", voiceEnabled);
         }
+      }
+
+      function playCharacterAudio(charId) {
+        if (!voiceEnabled) return;
+        const variants = CHARACTER_AUDIO_MAP[charId];
+        if (!variants || variants.length === 0) return;
+        const randomIndex = Math.floor(Math.random() * variants.length);
+        tryPlayAudio(variants[randomIndex]);
+      }
+
+      const typeSoundMap = {
+        "2x2": "images/2x2.mp3",
+        "1x2": "images/1x2.mp3",
+        "2x1": "images/1x2.mp3",
+        "1x1": "images/1x1.mp3",
+      };
+
+      function playMoveSound(block) {
+        const typeSound = typeSoundMap[block.type];
+        if (typeSound) tryPlayAudio(typeSound);
+        if (block.id !== "box") {
+          playCharacterAudio(block.id);
+        }
+      }
+
+      function playWinSound() {
+        tryPlayAudio("images/win.mp3");
+      }
+
+      function preloadSounds() {
+        const audioList = [
+          "images/win.mp3",
+          ...Object.values(typeSoundMap),
+          ...Object.values(CHARACTER_AUDIO_MAP).flat(),
+        ];
+        const uniqueSrcs = [...new Set(audioList)];
+        uniqueSrcs.forEach((src) => {
+          if (!audioCache[src]) {
+            const audio = new Audio();
+            audio.src = src;
+            audio.volume = 0.6;
+            audio.load();
+            audioCache[src] = audio;
+          }
+        });
       }
 
       // ============================================================
       // 碰撞检测与移动
       // ============================================================
+
       function buildGrid(blocksState) {
         const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
         blocksState.forEach((b) => {
@@ -898,33 +827,6 @@
         return true;
       }
 
-      // 处理回合完成（米歇尔到达出口）
-      function handleRoundComplete() {
-        if (currentRound < totalRounds) {
-          // 进入下一回合
-          currentRound++;
-          // 更新背景图
-          updateBoardBackground(currentRound);
-          // 加载下一回合的布局（循环）
-          blocks = getLayoutForRound(currentRound);
-          // 重新渲染棋盘
-          renderBoard();
-          // 清除提示缓存（新布局需要重新计算）
-          hintSolution = null;
-          hintIndex = 0;
-          hintStateKey = null;
-          // 更新回合显示
-          roundDisplay.textContent = `回合: ${currentRound}/${totalRounds}`;
-          // 步数不清零，累计
-        } else {
-          // 已完成全部回合，显示胜利弹窗
-          victorySteps.textContent = steps;
-          victoryTotalRounds.textContent = totalRounds;
-          victoryOverlay.classList.add("show");
-          playVictorySound();
-        }
-      }
-
       function moveBlock(blockId, dx, dy) {
         const block = blocks.find((b) => b.id === blockId);
         if (!block) return false;
@@ -935,18 +837,9 @@
         block.x += dx;
         block.y += dy;
         updateBlockPosition(block);
-
-        // 播放音效：eve 根据开关决定是否播放
-        if (block.id === 'eve') {
-          if (eveSoundEnabled) {
-            playEveSound();
-          }
-        } else {
-          playMoveSound();
-        }
+        playMoveSound(block);
 
         if (!solving) {
-          // 用户手动移动，使提示缓存失效
           hintSolution = null;
           hintIndex = 0;
           hintStateKey = null;
@@ -954,40 +847,27 @@
           stepDisplay.textContent = steps;
         }
 
-        // 胜利判定：仅当米歇尔到达出口 (1,3) 时触发回合处理
         if (block.id === "michelle" && block.x === 1 && block.y === 3) {
-          setTimeout(handleRoundComplete, 300);
+          setTimeout(() => {
+            playWinSound();
+            showVictory();
+          }, 300);
         }
 
         return true;
       }
 
-      // ============================================================
-      // 应用自定义总回合数
-      // ============================================================
-      function applyTotalRounds() {
-        let newTotal = parseInt(totalRoundsInput.value, 10);
-        if (isNaN(newTotal) || newTotal < 1) newTotal = 1;
-        if (newTotal > MAX_ROUNDS) newTotal = MAX_ROUNDS;
-        totalRoundsInput.value = newTotal; // 回显修正后的值
-        totalRounds = newTotal;
-        // 重置游戏（从第一回合开始）
-        resetGame();
+      function showVictory() {
+        victorySteps.textContent = steps;
+        victoryOverlay.classList.add("show");
       }
 
-      // ============================================================
-      // 重置
-      // ============================================================
       function resetGame() {
         solving = false;
         steps = 0;
         stepDisplay.textContent = "0";
-        currentRound = 1;
-        roundDisplay.textContent = `回合: ${currentRound}/${totalRounds}`;
         victoryOverlay.classList.remove("show");
-        blocks = getLayoutForRound(1); // 从第一关开始
-        updateBoardBackground(1);
-
+        blocks = deepCloneLayout(INITIAL_LAYOUT);
         hintSolution = null;
         hintIndex = 0;
         hintStateKey = null;
@@ -1002,11 +882,14 @@
           btnHint.textContent = "提 示";
         }
         renderBoard();
+        // 重置电梯显示为1
+        updateElevatorFloor(1);
       }
 
       // ============================================================
-      // 提示系统 (Web Worker BFS) - 代码与之前完全相同
+      // 提示系统 (Web Worker BFS)
       // ============================================================
+
       const workerCode = `
         const COLS = 4, ROWS = 5;
         const TYPES = { '2x2': [2,2], '1x2': [1,2], '2x1': [2,1], '1x1': [1,1] };
@@ -1115,7 +998,6 @@
 
         const btnHint = document.getElementById("btn-hint");
 
-        // 如果有缓存的解且还有后续步骤，直接执行
         if (hintSolution && hintIndex < hintSolution.length) {
           const move = hintSolution[hintIndex];
           solving = true;
@@ -1131,7 +1013,6 @@
           return;
         }
 
-        // 需要重新计算
         hintComputing = true;
         btnHint.disabled = true;
         btnHint.textContent = "思考中…";
@@ -1150,7 +1031,6 @@
           if (e.data.success && e.data.moves.length > 0) {
             hintSolution = e.data.moves;
             hintIndex = 0;
-            // 立即执行第一步
             const move = hintSolution[hintIndex];
             solving = true;
             moveBlock(move.id, move.dx, move.dy);
@@ -1174,7 +1054,6 @@
           alert("求解出错，请重试");
         };
 
-        // 发送当前状态给 Worker
         hintWorker.postMessage(deepCloneLayout(blocks));
       }
 
@@ -1182,7 +1061,8 @@
       // 启动
       // ============================================================
       window.addEventListener("load", () => {
-        resetGame(); // 此时 totalRounds 为默认1
+        preloadSounds();
+        resetGame();
       });
 
       window.addEventListener("resize", () => {
