@@ -428,6 +428,81 @@
           display: none;
         }
       }
+
+      /* 更新日志弹窗样式 */
+      #changelog-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 400;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+      }
+
+      #changelog-overlay.show {
+        display: flex;
+      }
+
+      #changelog-box {
+        background: linear-gradient(135deg, #7b5e7b, #4a3f5a);
+        border: 4px solid #e8b74a;
+        border-radius: 20px;
+        padding: 30px 40px;
+        text-align: center;
+        color: #fff;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: popIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        max-width: 500px;
+      }
+
+      #changelog-box h2 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        color: #e8b74a;
+      }
+
+      #changelog-content {
+        text-align: left;
+        margin: 20px 0;
+        font-size: 16px;
+        line-height: 1.6;
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 10px;
+      }
+
+      #changelog-content ul {
+        padding-left: 20px;
+      }
+
+      #changelog-content li {
+        margin-bottom: 5px;
+      }
+
+      .changelog-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .changelog-buttons .btn {
+        width: auto;
+        padding: 8px 16px;
+        font-size: 14px;
+        background: rgba(0, 0, 0, 0.5);
+        border-color: #e8b74a;
+        color: #e8b74a;
+      }
+
+      .changelog-buttons .btn:hover {
+        background: #e8b74a;
+        color: #1a1a1a;
+      }
     </style>
   </head>
   <body>
@@ -505,7 +580,74 @@
       </div>
     </div>
 
+    <!-- 更新日志弹窗 -->
+    <div id="changelog-overlay">
+      <div id="changelog-box">
+        <h2>📢 更新日志 v1.1</h2>
+        <div id="changelog-content">
+          <ul>
+            <li>新增：追加更多角色音效以及部分成员的随机播放（多惠，摩卡等角色多语音）</li>
+            <li>新增：重置按钮音效</li>
+            <li>优化：移动端布局适配横竖屏</li>
+            <li>修复：部分音效无法预加载的问题</li>
+            <li>新增：更新日志弹窗（就是本窗口）</li>
+          </ul>
+        </div>
+        <div class="changelog-buttons">
+          <button class="btn" id="changelog-ok">我~知~道~啦~</button>
+          <button class="btn" id="changelog-skip">了解 本次更新不再弹出</button>
+          <button class="btn" id="changelog-ignore">永久忽略</button>
+        </div>
+      </div>
+    </div>
+
     <script>
+      // ============================================================
+      // 更新日志配置
+      // ============================================================
+      const CHANGELOG_VERSION = 'v1.1'; // 当前版本号，更新时修改
+      const changelogOverlay = document.getElementById('changelog-overlay');
+
+      // 检查是否需要显示更新日志
+      function shouldShowChangelog() {
+        // 永久忽略检查
+        if (localStorage.getItem('changelog_permanent_ignore') === 'true') {
+          return false;
+        }
+        // 本次更新不再弹出检查
+        const lastVersion = localStorage.getItem('changelog_last_version');
+        if (lastVersion === CHANGELOG_VERSION) {
+          return false;
+        }
+        return true;
+      }
+
+      // 隐藏弹窗
+      function hideChangelog() {
+        changelogOverlay.classList.remove('show');
+      }
+
+      // 显示弹窗
+      function showChangelog() {
+        changelogOverlay.classList.add('show');
+      }
+
+      // 按钮事件
+      document.getElementById('changelog-ok').addEventListener('click', () => {
+        hideChangelog();
+        // 不做任何记录，下次加载仍会显示
+      });
+
+      document.getElementById('changelog-skip').addEventListener('click', () => {
+        hideChangelog();
+        localStorage.setItem('changelog_last_version', CHANGELOG_VERSION);
+      });
+
+      document.getElementById('changelog-ignore').addEventListener('click', () => {
+        hideChangelog();
+        localStorage.setItem('changelog_permanent_ignore', 'true');
+      });
+
       // ============================================================
       // 数据模型
       // ============================================================
@@ -714,12 +856,26 @@
       // ============================================================
       const audioCache = {};
 
+      // 角色语音配置：每个成员可配置多个音效文件，移动时随机选取一个
       const CHARACTER_AUDIO_MAP = {
-        eve: ["images/eve.mp3"],
-        otae: ["images/otae.mp3"],
+        eve: ["images/eve.mp3"], // 示例：多个语音文件，请根据实际修改
+        otae: ["images/otae1.mp3","images/otae2.mp3"], 
+        moca: ["images/moca1.mp3",'images/moca2.mp3'],
+        nyamu: ["images/nyamu.mp3"],
+        saya: ["images/saya.mp3"],
+        yukina: ["images/ykn.mp3"],
+        arisa: ["images/aras.mp3"],
+        tsukushi: ["images/tsukushi.mp3"]// 只有一个文件，则总是播放它
+        // 可继续添加其他角色
+      };
+
+      // UI 音效（重置按钮等）
+      const UI_AUDIO_MAP = {
+        reset: "images/reset.mp3", // 重置按钮音效
       };
 
       function tryPlayAudio(src) {
+        if (!src) return;
         if (audioCache[src]) {
           const a = audioCache[src].cloneNode();
           a.volume = audioCache[src].volume || 0.6;
@@ -777,15 +933,21 @@
         tryPlayAudio("images/win.mp3");
       }
 
+      function playResetSound() {
+        if (!voiceEnabled) return; // 重置音效也受语音开关控制
+        tryPlayAudio(UI_AUDIO_MAP.reset);
+      }
+
       function preloadSounds() {
         const audioList = [
           "images/win.mp3",
           ...Object.values(typeSoundMap),
           ...Object.values(CHARACTER_AUDIO_MAP).flat(),
+          UI_AUDIO_MAP.reset,
         ];
         const uniqueSrcs = [...new Set(audioList)];
         uniqueSrcs.forEach((src) => {
-          if (!audioCache[src]) {
+          if (src && !audioCache[src]) {
             const audio = new Audio();
             audio.src = src;
             audio.volume = 0.6;
@@ -864,6 +1026,8 @@
       }
 
       function resetGame() {
+        playResetSound(); // 播放重置音效
+
         solving = false;
         steps = 0;
         stepDisplay.textContent = "0";
@@ -1064,6 +1228,11 @@
       window.addEventListener("load", () => {
         preloadSounds();
         resetGame();
+
+        // 显示更新日志弹窗（如果需要）
+        if (shouldShowChangelog()) {
+          showChangelog();
+        }
       });
 
       window.addEventListener("resize", () => {
